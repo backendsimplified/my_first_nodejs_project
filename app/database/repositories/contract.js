@@ -15,4 +15,9 @@ const createContract = async ({ firstName, lastName, phoneNumber }) => {
   const user = await Contract.create({ firstName, lastName, phoneNumber });
   return user;
 };
-export { getAllContracts, createContract };
+
+const getContractByUUID = async ({ uuid }) => {
+  return Contract.findOne({ where: { uuid }, attributes: publicAttributes });
+};
+
+export { getAllContracts, createContract, getContractByUUID };
