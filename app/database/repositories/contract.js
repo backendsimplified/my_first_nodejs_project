@@ -20,4 +20,19 @@ const getContractByUUID = async ({ uuid }) => {
   return Contract.findOne({ where: { uuid }, attributes: publicAttributes });
 };
 
-export { getAllContracts, createContract, getContractByUUID };
+const modifyContact = async ({
+  contract,
+  newFirstName,
+  newLastName,
+  newPhoneNumber,
+}) => {
+  contract.firstName = newFirstName;
+  contract.lastName = newLastName;
+  contract.phoneNumber = newPhoneNumber;
+
+  // Save the modified contract to the database
+  await contract.save();
+  return contract;
+};
+
+export { getAllContracts, createContract, getContractByUUID, modifyContact };
