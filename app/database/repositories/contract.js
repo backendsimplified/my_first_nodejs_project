@@ -11,8 +11,13 @@ const getAllContracts = async () => {
   return contracts;
 };
 
+const createContract = async ({ firstName, lastName, phoneNumber }) => {
+  const user = await Contract.create({ firstName, lastName, phoneNumber });
+  return user;
+};
+
 const getContractByUUID = async ({ uuid }) => {
   return Contract.findOne({ where: { uuid }, attributes: publicAttributes });
 };
 
-export { getAllContracts, getContractByUUID };
+export { getAllContracts, createContract, getContractByUUID };

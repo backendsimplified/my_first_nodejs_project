@@ -1,9 +1,7 @@
 import express from "express";
 
-import {
-  getAllContracts,
-  getContractByUUID,
-} from "./database/repositories/contract.js";
+import { createContractSchema } from "./input_validation/createContract.js";
+import { getAllContracts, createContract, getContractByUUID } from "./database/repositories/contract.js";
 
 const app = express();
 // Parse incoming requests
@@ -14,21 +12,41 @@ app.get("/contracts", async (req, res) => {
   res.send(contracts);
 });
 
-app.get("/contract/:id", async (req, res) => {
-  const contractUUID = req.params.id;
+app.post("/contract", async (req, res) => {
+  const { error, value } = createContractSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ error: "InputValidationError" });
+  }
+
+  const { firstName, lastName, phoneNumber } = value;
 
   try {
-    // Fetch the contract by ID
-    const contract = await getContractByUUID({ uuid: contractUUID });
-
-    if (contract) {
-      res.status(200).json(contract);
-    } else {
-      res.status(404).json({ message: "Contract not found" });
-    }
-  } catch (error) {
-    console.error("Error fetching contract:", error);
+    const contract = await createContract({ firstName, lastName, phoneNumber });
+    res
+      .status(201)
+      .json({ message: "Contract created successfully", uuid: contract?.uuid });
+  } catch {
+    console.error("Error creating contract:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+app.get("/contract/:id", async (req, res) => {
+    const contractUUID = req.params.id;
+  
+    try {
+      // Fetch the contract by ID
+      const contract = await getContractByUUID({ uuid: contractUUID });
+  
+      if (contract) {
+        res.status(200).json(contract);
+      } else {
+        res.status(404).json({ message: "Contract not found" });
+      }
+    } catch (error) {
+      console.error("Error fetching contract:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
 export default app;
