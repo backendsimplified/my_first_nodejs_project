@@ -11,4 +11,8 @@ const getAllContracts = async () => {
   return contracts;
 };
 
-export { getAllContracts };
+const getContractByUUID = async ({ uuid }) => {
+  return Contract.findOne({ where: { uuid }, attributes: publicAttributes });
+};
+
+export { getAllContracts, getContractByUUID };
