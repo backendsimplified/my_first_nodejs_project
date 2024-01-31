@@ -11,4 +11,8 @@ const getAllContracts = async () => {
   return contracts;
 };
 
-export { getAllContracts };
+const createContract = async ({ firstName, lastName, phoneNumber }) => {
+  const user = await Contract.create({ firstName, lastName, phoneNumber });
+  return user;
+};
+export { getAllContracts, createContract };
