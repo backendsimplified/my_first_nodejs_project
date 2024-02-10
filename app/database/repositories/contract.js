@@ -1,26 +1,19 @@
-import { models } from "../dbInit.js";
+import { models } from "../initDb.js";
 
 const { Contract } = models;
 
-const publicAttributes = { exclude: ["id"] };
-const getAllContracts = async () => {
-  const contracts = await Contract.findAll({
-    attributes: publicAttributes,
-  });
-  console.log(contracts);
-  return contracts;
-};
+const publicAttribtues = { exclude: ["id"] };
 
-const createContract = async ({ firstName, lastName, phoneNumber }) => {
-  const user = await Contract.create({ firstName, lastName, phoneNumber });
-  return user;
-};
+const getAllContracts = async () =>
+  Contract.findAll({ attributes: publicAttribtues });
 
-const getContractByUUID = async ({ uuid }) => {
-  return Contract.findOne({ where: { uuid }, attributes: publicAttributes });
-};
+const createContract = async ({ firstName, lastName, phoneNumber }) =>
+  Contract.create({ firstName, lastName, phoneNumber });
 
-const modifyContact = async ({
+const getContractByUUID = async ({ uuid }) =>
+  Contract.findOne({ where: { uuid } });
+
+const modifyContract = async ({
   contract,
   newFirstName,
   newLastName,
@@ -30,9 +23,7 @@ const modifyContact = async ({
   contract.lastName = newLastName;
   contract.phoneNumber = newPhoneNumber;
 
-  // Save the modified contract to the database
   await contract.save();
   return contract;
 };
-
-export { getAllContracts, createContract, getContractByUUID, modifyContact };
+export { getAllContracts, createContract, getContractByUUID, modifyContract };

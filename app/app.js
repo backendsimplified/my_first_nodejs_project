@@ -1,38 +1,41 @@
 import express from "express";
-
-import { createContractSchema } from "./input_validation/createContract.js";
 import {
   getAllContracts,
   createContract,
   getContractByUUID,
-  modifyContact,
+  modifyContract,
 } from "./database/repositories/contract.js";
+import { createContractSchema } from "./input_validation/contract.js";
 
 const app = express();
-// Parse incoming requests
+
+// Parse incoming requests:
 app.use(express.json());
 
 app.get("/contracts", async (req, res) => {
-  const contracts = await getAllContracts();
-  res.send(contracts);
+  try {
+    const contracts = await getAllContracts();
+    res.send(contracts);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Internal Server Error");
+  }
 });
 
 app.post("/contract", async (req, res) => {
   const { error, value } = createContractSchema.validate(req.body);
   if (error) {
-    return res.status(400).json({ error: "InputValidationError" });
+    return res.status(400).send("Input Validation Error");
   }
 
   const { firstName, lastName, phoneNumber } = value;
 
   try {
     const contract = await createContract({ firstName, lastName, phoneNumber });
-    res
-      .status(201)
-      .json({ message: "Contract created successfully", uuid: contract?.uuid });
-  } catch {
-    console.error("Error creating contract:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(201).send({ uuid: contract.uuid });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Internal Server Error");
   }
 });
 
@@ -40,50 +43,44 @@ app.get("/contract/:id", async (req, res) => {
   const contractUUID = req.params.id;
 
   try {
-    // Fetch the contract by ID
     const contract = await getContractByUUID({ uuid: contractUUID });
-
     if (contract) {
-      res.status(200).json(contract);
-    } else {
-      res.status(404).json({ message: "Contract not found" });
+      return res.status(200).json(contract);
     }
+
+    return res.status(404).send("Could not find Contract");
   } catch (error) {
-    console.error("Error fetching contract:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.log(error);
+    return res.status(500).send("Internal Server Error");
   }
 });
 
 app.put("/contract/:id", async (req, res) => {
   const { error, value } = createContractSchema.validate(req.body);
   if (error) {
-    return res.status(400).json({ error: "InputValidationError" });
+    return res.status(400).send("Input Validation Error");
   }
-  const {
-    firstName: newFirstName,
-    lastName: newLastName,
-    phoneNumber: newPhoneNumber,
-  } = value;
+
+  const { firstName, lastName, phoneNumber } = value;
 
   const contractUUID = req.params.id;
-  try {
-    // Fetch the contract by ID
-    const contract = await getContractByUUID({ uuid: contractUUID });
 
+  try {
+    const contract = await getContractByUUID({ uuid: contractUUID });
     if (contract) {
-      const modifiedContract = await modifyContact({
+      await modifyContract({
         contract,
-        newFirstName,
-        newLastName,
-        newPhoneNumber,
+        newFirstName: firstName,
+        newLastName: lastName,
+        newPhoneNumber: phoneNumber,
       });
-      res.status(200).json(modifiedContract.uuid);
-    } else {
-      res.status(404).json({ message: "Contract not found" });
+      return res.status(200).json(contract.uuid);
     }
+
+    return res.status(404).send("Could not find Contract");
   } catch (error) {
-    console.error("Error fetching contract:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.log(error);
+    return res.status(500).send("Internal Server Error");
   }
 });
 
